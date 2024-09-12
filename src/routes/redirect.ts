@@ -13,15 +13,15 @@ const router = new Hono();
 router.get("/:slug", async (c) => {
   const slug = c.req.param("slug");
 
-  const link = selectLinkSchema.parse(
-    db.select().from(links).where(eq(links.slug, slug)).get()
-  );
+  const link = db.select().from(links).where(eq(links.slug, slug)).get();
 
   if (!link) {
     return c.json({ error: "Link not found" }, 404);
   }
 
-  if (link.expiresAt && link.expiresAt < new Date()) {
+  const parsedLink = selectLinkSchema.parse(link);
+
+  if (parsedLink.expiresAt && parsedLink.expiresAt < new Date()) {
     return c.json({ error: "Link has expired" }, 410);
   }
 
